@@ -27,12 +27,12 @@ app.use('/api/notes',noteRouter)
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static("frontend/build"));
-  app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "/client/build/index.html"));
-  });
- }
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static("frontend/build"));
+//   app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname + "/client/build/index.html"));
+//   });
+//  }
 
 app.listen(port, () => {
   
