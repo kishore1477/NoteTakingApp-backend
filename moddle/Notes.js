@@ -24,6 +24,10 @@ const NoteSchema = new mongoose.Schema({
         type:String,
 
     },
+    status: {
+        type:Number,
+
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
        ref: 'user'

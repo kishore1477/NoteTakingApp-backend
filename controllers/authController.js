@@ -13,41 +13,41 @@ class UserController {
         // if (!errors.isEmpty()) {
         //     return res.status(400).json({ errors: errors.array() });
         // }
-        const { name, email, password, password_confirm} = req.body
-        
-      try {
-        const emailfind = await User.findOne({ email })
-        if (emailfind) {
-            res.status(400).json({"fail":"Email already exists, please enter another email"})
-        } else {
-            if (name && email && password && password_confirm) {
+        const { name, email, password, password_confirm } = req.body
 
-                if (password === password_confirm) {
-                    const salt = await bcrypt.genSalt(10)
-                    const hashPass = await bcrypt.hash(password, salt)
-                    const UserData = new User({
-                        name: name,
-                        email: email,
-                        password: hashPass,
-                       
-                    })
-                    const UserDataSave = await UserData.save()
-                    const findsavedUser = await User.findOne({ email })
-                    // Generate JWT token 
-                    const token = jwt.sign({ userID: findsavedUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
-                    res.status(200).json({ "token": token, "success": "Signup  successfully." })
-                } else {
-                    res.status(400).json({"fail":'Password does not match'})
-
-                }
+        try {
+            const emailfind = await User.findOne({ email })
+            if (emailfind) {
+                res.status(400).json({ "fail": "Email already exists, please enter another email" })
             } else {
-                res.status(400).json({"fail":'All fields are required'})
+                if (name && email && password && password_confirm) {
+
+                    if (password === password_confirm) {
+                        const salt = await bcrypt.genSalt(10)
+                        const hashPass = await bcrypt.hash(password, salt)
+                        const UserData = new User({
+                            name: name,
+                            email: email,
+                            password: hashPass,
+
+                        })
+                        const UserDataSave = await UserData.save()
+                        const findsavedUser = await User.findOne({ email })
+                        // Generate JWT token 
+                        const token = jwt.sign({ userID: findsavedUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
+                        res.status(200).json({ "token": token, "success": "Signup  successfully." })
+                    } else {
+                        res.status(400).json({ "fail": 'Password does not match' })
+
+                    }
+                } else {
+                    res.status(400).json({ "fail": 'All fields are required' })
+                }
             }
+        } catch (error) {
+            res.status(401).json({ "fail": 'Internal server occured.', error, message: error?.message })
+
         }
-    } catch (error) {
-          res.status(401).json({"fail":'Internal server occured.'})
-        
-      }
     }
 
     //  User login 
@@ -62,22 +62,22 @@ class UserController {
                     if (user.email === email && isMatch) {
                         //  token gnerate for login
                         const token = jwt.sign({ userID: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
-                        res.status(200).json({ "loginToken": token, "success":"Login Successfully" })
+                        res.status(200).json({ "loginToken": token, "success": "Login Successfully" })
 
                     } else {
-                        res.status(400).json({"fail":"Invalid credentials"})
+                        res.status(400).json({ "fail": "Invalid credentials" })
 
                     }
 
                 } else {
-                    res.status(400).json({"fail":"User does'not exists"})
+                    res.status(400).json({ "fail": "User does'not exists" })
                 }
             } else {
-                res.status(400).json({"fail":"All field are required"})
+                res.status(400).json({ "fail": "All field are required" })
             }
         } catch (error) {
-            res.status(401).json({"fail":"Internal server error occured"})
- 
+            res.status(401).json({ "fail": "Internal server error occured" })
+
         }
     }
     // user change password 
@@ -87,70 +87,72 @@ class UserController {
             if (password === password_confirm) {
                 const salt = await bcrypt.genSalt(10)
                 const hashPass = await bcrypt.hash(password, salt)
-                
+
                 await User.findByIdAndUpdate(req.user._id, { $set: { password: hashPass } })
-                res.status(200).json({msg: "Password changed successfully"})
+                res.status(200).json({ msg: "Password changed successfully" })
             } else {
 
-                res.status(400).json({msg:"password does not  match"})
+                res.status(400).json({ msg: "password does not  match" })
             }
         } else {
-            res.status(400).json({msg: "All fields are required!"})
+            res.status(400).json({ msg: "All fields are required!" })
         }
     }
     static LoggedUserData = (req, res) => {
-        
+
         res.status(200).send(req.user)
     }
 
     static sendEmail = async (req, res) => {
         const { email } = req.body
-        
+
         if (email) {
-            
-            // try {
-               
-           
-            const user = await User.findOne({ email })
-            
-            if (user) {
-                const secret = user._id + process.env.JWT_SECRET_KEY
-                const token = jwt.sign({ userID: user._id }, secret, { expiresIn: '45m' })
-                const link = `https://8000-kishorek114-notetakinga-ukzh1bagysq.ws-eu74.gitpod.io/passwordReset/${user._id}/${token}`
-                
 
-                 // Send Email
-        let info =  await transporter.sendMail({
-          from:"kishorejaipal477@gmail.com",
-          to: user.email,
-          subject: "KishoreAuth - Password Reset Link",
-          html: `<a href=${link}>Click Here</a> to Reset Your Password`
-        })
-        
-        res.status(200).json({info:info, msg:"Click the provided link  via email"})
-            } else {
-                res.status(200).json({ "status": "failed", msg: "Email doesn't exists " })
+            try {
 
+
+                const user = await User.findOne({ email })
+
+                if (user) {
+                    const secret = user._id + process.env.JWT_SECRET_KEY
+                    const token = jwt.sign({ userID: user._id }, secret, { expiresIn: '45m' })
+                    const link = `https://8000-kishorek114-notetakinga-ukzh1bagysq.ws-eu74.gitpod.io/passwordReset/${user._id}/${token}`
+
+                    console.log("user", user)
+                    // Send Email
+                    let info = await transporter.sendMail({
+                        from: "kishorejaipal477@gmail.com",
+                        to: user.email,
+                        subject: "KishoreAuth - Password Reset Link",
+                        html: `<a href=${link}>Click Here</a> to Reset Your Password`
+                    })
+                    console.log("info", info)
+
+                    return res.status(200).json({ info: info, msg: "Click the provided link  via email" })
+                } else {
+                    res.status(200).json({ "status": "failed", msg: "Email doesn't exists " })
+
+                }
+
+            } catch (error) {
+                console.log("error", error)
+                res.status(400).json({ "message": "Internal error", "Error": error })
             }
-
-        // } catch (error) {
-        //         res.status(400).json({"message":"Internal error", "Error":error})
-        // }
         } else {
-            res.status(200).json({ "status": "failed",msg: "Email Field is Required" })
+            return res.status(200).json({ "status": "failed", msg: "Email Field is Required" })
         }
     }
 
     static passwordReset = async (req, res) => {
         const { password, password_confirm } = req.body
-        
+
         const { id, token } = req.params
-        
+
         const user = await User.findById(id)
-        
+
         const new_secret = user._id + process.env.JWT_SECRET_KEY
         try {
-        jwt.verify(token, new_secret)
+            jwt.verify(token, new_secret)
             // let verifyToken = jwt.verify(token, new_secret)
             // 
             if (password && password_confirm) {
@@ -178,22 +180,22 @@ class UserController {
         // if (!errors.isEmpty()) {
         //     return res.status(400).json({ errors: errors.array() });
         // }
-        const { name, email, msg} = req.body
-        
+        const { name, email, msg } = req.body
+
         if (name && email && msg) {
             const contactData = new Contact({
                 name: name,
                 email: email,
                 msg: msg,
-               
+
             })
             const UserDataSave = await contactData.save()
-            res.status(200).json({msg:'Thanks for contact us, we will touch with you within in 2 days.'})
-           
+            res.status(200).json({ msg: 'Thanks for contact us, we will touch with you within in 2 days.' })
+
         } else {
-            res.status(400).json({msg:'All fields are required'})
+            res.status(400).json({ msg: 'All fields are required' })
         }
-       
+
     }
 
 }

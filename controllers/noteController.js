@@ -44,7 +44,8 @@ class NoteController {
     }
 	//✍ ROUTE:3 Update note
     static updateNote = async(req,res) => {
-        const {title,description,category,url}=req.body
+        console.log("body", req.body)
+        const {title,description,category,url, status}=req.body
     // create new object of body data
     try {
         
@@ -54,6 +55,7 @@ class NoteController {
         if(description){newNote.description=description}
         if(category){newNote.category=category}
         if(url){newNote.url=url}
+        if(status){newNote.status=status}
     //   1.find the added note and update it 
     let note  = await Note.findById(req.params.id)
     if(!note){return res.status(404).send("Not Found in db")}
