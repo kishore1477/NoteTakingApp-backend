@@ -8,10 +8,10 @@ class NoteController {
     static createNote = async (req, res) => {
 
         // handle request body  parameters error
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ error: errors.array() });
-        }
+        // const errors = validationResult(req);
+        // if (!errors.isEmpty()) {
+        //     return res.status(400).json({ error: errors.array() });
+        // }
         try {
         
         const { description, title, category, url, docs } = req.body
